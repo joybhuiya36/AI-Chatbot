@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+}
+
+body {
+  background-color: #1e1e1e;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chatbot-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #1e1e1e;
+}
+
+/* Main Content Styles */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background-color: #1e1e1e;
+}
+
+/* Add overlay when sidebar is open */
+@media (max-width: 768px) {
+  .chatbot-container {
+    &::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s;
+      pointer-events: none;
+      backdrop-filter: blur(3px);
+    }
+  }
+
+  .sidebar.sidebar--mobile-open ~ .main-content::before {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+  }
+
+  .main-content {
+    width: 100%;
+  }
+}
