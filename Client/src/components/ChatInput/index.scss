@@ -1,4 +1,6 @@
 .chat-input {
+  $root: &;
+
   padding: 20px;
   margin: 0 auto;
   max-width: 850px;
@@ -76,5 +78,19 @@
     margin-top: 12px;
     color: #888888;
     font-size: 12px;
+  }
+
+  &--centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    background-color: unset;
+
+    #{$root}__field {
+      height: 80px;
+    }
   }
 }

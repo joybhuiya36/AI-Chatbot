@@ -6,6 +6,8 @@ interface SidebarProps {
   startNewChat: () => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (isOpen: boolean) => void;
+  activeConversationId: number | undefined;
+  onSelectConversation: (id: number) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -13,6 +15,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   startNewChat,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
+  activeConversationId,
+  onSelectConversation,
 }) => {
   return (
     <div
@@ -31,7 +35,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
       <div className="sidebar__chat-history">
         {chatHistory.map((chat) => (
-          <div key={chat.id} className="sidebar__history-item">
+          <div
+            key={chat.id}
+            className={`sidebar__history-item ${
+              activeConversationId === chat.id
+                ? "sidebar__history-item--active"
+                : ""
+            }`}
+            onClick={() => onSelectConversation(chat.id)}
+          >
             {chat.title}
           </div>
         ))}

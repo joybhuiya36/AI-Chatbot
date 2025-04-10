@@ -4,14 +4,15 @@ import Sidebar from "./components/Sidebar";
 import ChatHeader from "./components/ChatHeader";
 import MessageList from "./components/MessageList";
 import ChatInput from "./components/ChatInput";
+import {
+  useSendMessageMutation,
+  useGetChatHistoryQuery,
+  useCreateConversationMutation,
+} from "./services/api";
+import { Message } from "./types";
 
 function App() {
-  const [messages, setMessages] = useState([
-    {
-      text: "Hello! I'm your AI assistant. How may I help you today?",
-      sender: "bot",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [chatHistory, setChatHistory] = useState([
     { id: 1, title: "General Assistance" },
@@ -19,6 +20,13 @@ function App() {
     { id: 3, title: "Code Generation" },
   ]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isFreshConversation, setIsFreshConversation] = useState(true);
+  const [activeConversationId, setActiveConversationId] = useState<number>();
+
+  // API calls
+  const [sendMessage, { isLoading }] = useSendMessageMutation();
+  const { data: historyData } = useGetChatHistoryQuery();
+  const [createConversation] = useCreateConversationMutation();
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -27,7 +35,7 @@ function App() {
       if (
         isMobileSidebarOpen &&
         !target.closest(".sidebar") &&
-        !target.closest(".hamburger-menu")
+        !target.closest(".chat-header__menu-btn")
       ) {
         setIsMobileSidebarOpen(false);
       }
@@ -39,38 +47,77 @@ function App() {
     };
   }, [isMobileSidebarOpen]);
 
-  const handleSend = () => {
+  // Update chat history from API when available
+  useEffect(() => {
+    if (historyData) {
+      setChatHistory(historyData);
+      if (historyData.length > 0 && !activeConversationId) {
+        setActiveConversationId(historyData[0].id);
+      }
+    }
+  }, [historyData, activeConversationId]);
+
+  const handleSend = async () => {
     if (input.trim() === "") return;
+
+    // Set fresh conversation to false when user sends a message
+    setIsFreshConversation(false);
 
     // Add user message
     setMessages([...messages, { text: input, sender: "user" }]);
 
-    // Simulate bot response (in a real app, you'd call an API here)
-    setTimeout(() => {
+    try {
+      const response = await sendMessage(input).unwrap();
+
+      // Add bot response from API
       setMessages((prevMessages) => [
         ...prevMessages,
         {
-          text: "I'm your virtual assistant. I've processed your message and here's my response. I can provide information on various topics, help with tasks, or just chat if you'd like to have a conversation.",
+          text:
+            response.message || "I'm sorry, I couldn't process your request.",
           sender: "bot",
         },
       ]);
-    }, 1000);
+    } catch (error) {
+      // Handle error
+      console.error("Failed to send message:", error);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          text: "Sorry, there was an error processing your request.",
+          sender: "bot",
+        },
+      ]);
+    }
 
     setInput("");
   };
 
-  const startNewChat = () => {
-    setChatHistory([
-      { id: Date.now(), title: "New Conversation" },
-      ...chatHistory,
-    ]);
-    setMessages([
-      {
-        text: "Hello! I'm your AI assistant. How may I help you today?",
-        sender: "bot",
-      },
-    ]);
-    setInput("");
+  const startNewChat = async () => {
+    try {
+      // Create new conversation using API
+      // await createConversation().unwrap();
+
+      setMessages([]);
+      setIsFreshConversation(true);
+      setActiveConversationId(undefined);
+      setInput("");
+
+      if (window.innerWidth <= 768) {
+        setIsMobileSidebarOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to create new conversation:", error);
+    }
+  };
+
+  const handleSelectConversation = (id: number) => {
+    setActiveConversationId(id);
+    // TODO: Here you would typically fetch the messages for this conversation
+    setMessages([]);
+    setIsFreshConversation(false);
+
+    // Close mobile sidebar after selection
     if (window.innerWidth <= 768) {
       setIsMobileSidebarOpen(false);
     }
@@ -83,6 +130,8 @@ function App() {
         startNewChat={startNewChat}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        activeConversationId={activeConversationId}
+        onSelectConversation={handleSelectConversation}
       />
 
       <div className="main-content">
@@ -91,9 +140,18 @@ function App() {
           setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         />
 
-        <MessageList messages={messages} />
+        <MessageList
+          messages={messages}
+          isFreshConversation={isFreshConversation}
+        />
 
-        <ChatInput input={input} setInput={setInput} handleSend={handleSend} />
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          handleSend={handleSend}
+          isFreshConversation={isFreshConversation}
+          isSendButtonDisabled={isLoading}
+        />
       </div>
     </div>
   );

@@ -66,12 +66,33 @@
     letter-spacing: 0.3px;
   }
 
+  &--fresh {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__welcome {
+    text-align: center;
+
+    h1 {
+      font-size: 2rem;
+      color: #444;
+      margin-bottom: 11rem;
+    }
+  }
+
   @media (max-width: 768px) {
     &__row {
       &--user,
       &--bot {
         padding-left: 20px;
         padding-right: 20px;
+      }
+    }
+    &__welcome {
+      h1 {
+        margin-bottom: 15rem;
       }
     }
   }

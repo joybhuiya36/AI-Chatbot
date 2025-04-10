@@ -5,36 +5,46 @@ interface ChatInputProps {
   input: string;
   setInput: (input: string) => void;
   handleSend: () => void;
+  isFreshConversation: boolean;
+  isSendButtonDisabled: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   input,
   setInput,
   handleSend,
+  isFreshConversation,
+  isSendButtonDisabled,
 }) => {
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSend();
     }
   };
 
   return (
-    <div className="chat-input">
+    <div
+      className={`chat-input ${
+        isFreshConversation ? "chat-input--centered" : ""
+      }`}
+    >
       <div className="chat-input__container">
         <input
           className="chat-input__field"
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your message here..."
+          onKeyDown={handleKeyDown}
+          placeholder={
+            isFreshConversation ? "Ask anything" : "Type your message here..."
+          }
         />
         <button
           className={`chat-input__send-btn ${
             input.trim() === "" ? "chat-input__send-btn--disabled" : ""
           }`}
           onClick={handleSend}
-          disabled={input.trim() === ""}
+          disabled={input.trim() === "" || isSendButtonDisabled}
         >
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -44,10 +54,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </svg>
         </button>
       </div>
-      <div className="chat-input__disclaimer">
-        AI responses are generated and may not always be accurate. Verify
-        important information.
-      </div>
+      {!isFreshConversation && (
+        <div className="chat-input__disclaimer">
+          AI responses are generated and may not always be accurate. Verify
+          important information.
+        </div>
+      )}
     </div>
   );
 };
