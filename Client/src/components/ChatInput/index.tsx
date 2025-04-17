@@ -17,7 +17,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   isSendButtonDisabled,
 }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isSendButtonDisabled) {
       handleSend();
     }
   };
@@ -41,7 +41,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
         />
         <button
           className={`chat-input__send-btn ${
-            input.trim() === "" ? "chat-input__send-btn--disabled" : ""
+            input.trim() === "" || isSendButtonDisabled
+              ? "chat-input__send-btn--disabled"
+              : ""
           }`}
           onClick={handleSend}
           disabled={input.trim() === "" || isSendButtonDisabled}

@@ -7,29 +7,29 @@ import ChatInput from "./components/ChatInput";
 import {
   useSendMessageMutation,
   useGetChatHistoryQuery,
-  useCreateConversationMutation,
+  useGetAllConversationQuery,
 } from "./services/api";
-import { Message } from "./types";
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [chatHistory, setChatHistory] = useState([
-    { id: 1, title: "General Assistance" },
-    { id: 2, title: "Writing Help" },
-    { id: 3, title: "Code Generation" },
-  ]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isFreshConversation, setIsFreshConversation] = useState(true);
-  const [activeConversationId, setActiveConversationId] = useState<number>();
+  const [initialMessage, setInitialMessage] = useState<string>();
+  const [activeConversationId, setActiveConversationId] = useState<string>();
 
   // API calls
+  const { data: allConversation } = useGetAllConversationQuery();
+  const { data: messageHistory } = useGetChatHistoryQuery(
+    activeConversationId || "",
+    {
+      skip: !activeConversationId,
+    }
+  );
   const [sendMessage, { isLoading }] = useSendMessageMutation();
-  const { data: historyData } = useGetChatHistoryQuery();
-  const [createConversation] = useCreateConversationMutation();
 
-  // Close sidebar when clicking outside on mobile
+  // UseEffects
   useEffect(() => {
+    // Close sidebar when clicking outside on mobile
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -47,58 +47,40 @@ function App() {
     };
   }, [isMobileSidebarOpen]);
 
-  // Update chat history from API when available
   useEffect(() => {
-    if (historyData) {
-      setChatHistory(historyData);
-      if (historyData.length > 0 && !activeConversationId) {
-        setActiveConversationId(historyData[0].id);
-      }
-    }
-  }, [historyData, activeConversationId]);
+    setInitialMessage(undefined);
+  }, [messageHistory]);
 
   const handleSend = async () => {
     if (input.trim() === "") return;
 
-    // Set fresh conversation to false when user sends a message
+    if (!activeConversationId) {
+      setInitialMessage(input);
+    }
     setIsFreshConversation(false);
 
-    // Add user message
-    setMessages([...messages, { text: input, sender: "user" }]);
-
     try {
-      const response = await sendMessage(input).unwrap();
+      const apiRequest = {
+        message: input,
+        ...(activeConversationId
+          ? { conversationId: activeConversationId }
+          : {}),
+      };
+      setInput("");
 
-      // Add bot response from API
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text:
-            response.message || "I'm sorry, I couldn't process your request.",
-          sender: "bot",
-        },
-      ]);
+      const response = await sendMessage(apiRequest).unwrap();
+
+      if (!activeConversationId) {
+        setActiveConversationId(response.result.conversationId);
+      }
     } catch (error) {
-      // Handle error
       console.error("Failed to send message:", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text: "Sorry, there was an error processing your request.",
-          sender: "bot",
-        },
-      ]);
     }
-
-    setInput("");
   };
 
+  // Methods
   const startNewChat = async () => {
     try {
-      // Create new conversation using API
-      // await createConversation().unwrap();
-
-      setMessages([]);
       setIsFreshConversation(true);
       setActiveConversationId(undefined);
       setInput("");
@@ -111,10 +93,8 @@ function App() {
     }
   };
 
-  const handleSelectConversation = (id: number) => {
+  const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
-    // TODO: Here you would typically fetch the messages for this conversation
-    setMessages([]);
     setIsFreshConversation(false);
 
     // Close mobile sidebar after selection
@@ -126,7 +106,7 @@ function App() {
   return (
     <div className="chatbot-container">
       <Sidebar
-        chatHistory={chatHistory}
+        allConversation={allConversation?.result.data || []}
         startNewChat={startNewChat}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
@@ -141,8 +121,10 @@ function App() {
         />
 
         <MessageList
-          messages={messages}
+          messages={messageHistory?.result.messages || []}
           isFreshConversation={isFreshConversation}
+          showLoading={isLoading}
+          initialMessage={initialMessage}
         />
 
         <ChatInput

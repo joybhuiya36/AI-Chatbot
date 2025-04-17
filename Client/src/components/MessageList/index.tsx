@@ -1,19 +1,26 @@
 import React, { useEffect, useRef } from "react";
 import "./index.scss";
-
-interface Message {
-  text: string;
-  sender: string;
-}
+import { IChatMessage } from "../../types";
+import TypingAnimation from "../TypingAnimation";
+import ReactMarkdown from "react-markdown";
 
 interface MessageListProps {
-  messages: Message[];
+  messages: IChatMessage[];
   isFreshConversation: boolean;
+  showLoading?: boolean;
+  initialMessage?: string;
 }
+
+const AUTHOR = {
+  USER: "User",
+  ASSISTANT: "Assistant",
+};
 
 const MessageList: React.FC<MessageListProps> = ({
   messages,
   isFreshConversation,
+  showLoading = false,
+  initialMessage,
 }) => {
   // Create a ref for scrolling to the latest message
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -37,18 +44,46 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div className="message-list">
-      {messages.map((message, index) => (
-        <div
-          key={index}
-          className={`message-list__row message-list__row--${message.sender}`}
-        >
-          <div className="message-list__avatar">
-            {message.sender === "bot" ? "AI" : "U"}
+      {!initialMessage ? (
+        messages.map((message, index) => (
+          <div
+            key={index}
+            className={`message-list__row message-list__row--${message.author}`}
+          >
+            <div className="message-list__avatar">
+              {message.author === AUTHOR.ASSISTANT ? "AI" : "U"}
+            </div>
+            <div className="message-list__content">
+              {message.author === AUTHOR.ASSISTANT ? (
+                <div>
+                  <ReactMarkdown>{message.message}</ReactMarkdown>
+                </div>
+              ) : (
+                <div>{message.message}</div>
+              )}
+            </div>
           </div>
-          <div className="message-list__content">{message.text}</div>
+        ))
+      ) : (
+        <div className={`message-list__row message-list__row--${AUTHOR.USER}`}>
+          <div className="message-list__avatar">U</div>
+          <div className="message-list__content">
+            <div>{initialMessage}</div>
+          </div>
         </div>
-      ))}
-      {/* This empty div will be used as the scroll target */}
+      )}
+      {showLoading && (
+        <div
+          className={`message-list__row message-list__row--${AUTHOR.ASSISTANT}`}
+        >
+          <div className="message-list__avatar">AI</div>
+          <div className="message-list__content">
+            <div>
+              <TypingAnimation />
+            </div>
+          </div>
+        </div>
+      )}
       <div ref={messageEndRef} />
     </div>
   );

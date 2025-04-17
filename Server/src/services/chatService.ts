@@ -21,9 +21,10 @@ class ChatService {
     if (!conversationId) {
       const prompt = PROMPT_TEMPLATES.TITLE_GENERATION + message;
       const aiResponse = await GEN_AI(prompt);
-
+      const formatedTitle =
+        aiResponse?.toString().replace(/[\n*?]/g, "") || "New chat";
       const conversation = await chatRepository.createConversation(
-        aiResponse?.replace("\n", "") || ""
+        formatedTitle
       );
       conversationId = conversation.id;
     }

@@ -22,12 +22,12 @@
       border-radius: 15px;
     }
 
-    &--user,
-    &--bot {
+    &--User,
+    &--Assistant {
       width: 100%;
       padding-left: 60px;
       padding-right: 60px;
-      margin-bottom: 15px;
+      margin-bottom: 5px;
     }
   }
 
@@ -38,17 +38,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-right: 20px;
+    margin-right: 25px;
     flex-shrink: 0;
     font-weight: bold;
 
-    .message-list__row--bot & {
+    .message-list__row--Assistant & {
       background: linear-gradient(135deg, #10a37f, #0a7d61);
       color: white;
       box-shadow: 0 4px 10px rgba(16, 163, 127, 0.3);
     }
 
-    .message-list__row--user & {
+    .message-list__row--User & {
       background: linear-gradient(135deg, #3e3e3e, #2a2a2a);
       color: white;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -58,12 +58,16 @@
   &__content {
     color: #e0e0e0;
     line-height: 1.7;
-    max-width: 750px;
+    width: 100%;
     display: flex;
     align-items: center;
     padding: 5px 0;
     font-size: 15px;
     letter-spacing: 0.3px;
+
+    &--message {
+      width: 100%;
+    }
   }
 
   &--fresh {
@@ -84,8 +88,8 @@
 
   @media (max-width: 768px) {
     &__row {
-      &--user,
-      &--bot {
+      &--User,
+      &--Assistant {
         padding-left: 20px;
         padding-right: 20px;
       }

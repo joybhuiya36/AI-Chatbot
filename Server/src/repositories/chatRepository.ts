@@ -7,11 +7,15 @@ class ChatRepository {
   async findAllConversation(): Promise<any> {
     let params: any = {
       TableName: "Conversations",
-      ProjectionExpression: "id, title, createdAt",
+      ProjectionExpression: "id, title, createdAt, updatedAt",
     };
 
     const data = await docClient.scan(params).promise();
-    return data.Items || [];
+
+    return (data.Items || []).sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
   }
 
   async findChatHistory(conversationId: string): Promise<any> {
@@ -33,6 +37,7 @@ class ChatRepository {
       title,
       messages: [],
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     await docClient
@@ -54,7 +59,7 @@ class ChatRepository {
       TableName: "Conversations",
       Key: { id: conversationId },
       UpdateExpression:
-        "SET messages = list_append(if_not_exists(messages, :empty_list), :message)",
+        "SET messages = list_append(if_not_exists(messages, :empty_list), :message), updatedAt = :updatedAt",
       ExpressionAttributeValues: {
         ":message": [
           {
@@ -69,6 +74,7 @@ class ChatRepository {
           },
         ],
         ":empty_list": [],
+        ":updatedAt": new Date().toISOString(),
       },
     };
 

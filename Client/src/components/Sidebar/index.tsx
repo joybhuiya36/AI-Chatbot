@@ -1,17 +1,18 @@
 import React from "react";
 import "./index.scss";
+import { IConversation } from "../../types";
 
 interface SidebarProps {
-  chatHistory: { id: number; title: string }[];
+  allConversation: IConversation[];
   startNewChat: () => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (isOpen: boolean) => void;
-  activeConversationId: number | undefined;
-  onSelectConversation: (id: number) => void;
+  activeConversationId: string | undefined;
+  onSelectConversation: (id: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  chatHistory,
+  allConversation,
   startNewChat,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
@@ -34,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
       <div className="sidebar__chat-history">
-        {chatHistory.map((chat) => (
+        {allConversation.map((chat) => (
           <div
             key={chat.id}
             className={`sidebar__history-item ${

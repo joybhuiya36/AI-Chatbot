@@ -23,6 +23,7 @@ async function createTables() {
       { AttributeName: "id", AttributeType: "S" },
       { AttributeName: "title", AttributeType: "S" },
       { AttributeName: "createdAt", AttributeType: "S" },
+      { AttributeName: "updatedAt", AttributeType: "S" },
     ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 5,
