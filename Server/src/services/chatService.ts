@@ -14,7 +14,7 @@ class ChatService {
       throw new Error(ERROR_MESSAGES.CONVERSATION_NOT_FOUND);
     }
 
-    return conversation.messages || [];
+    return conversation;
   }
 
   async processMessage(message: string, conversationId?: string): Promise<any> {
@@ -23,7 +23,7 @@ class ChatService {
       const aiResponse = await GEN_AI(prompt);
 
       const conversation = await chatRepository.createConversation(
-        aiResponse || ""
+        aiResponse?.replace("\n", "") || ""
       );
       conversationId = conversation.id;
     }

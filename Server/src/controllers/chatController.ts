@@ -34,7 +34,7 @@ class ChatController {
     next: NextFunction
   ): Promise<any> {
     try {
-      const { conversationId } = req.query;
+      const { conversationId } = req.params;
 
       const messages = await chatService.getChatHistory(
         conversationId as string

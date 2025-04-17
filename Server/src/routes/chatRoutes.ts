@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/conversation", chatController.getAllConversation);
 
 // Get chat history
-router.get("/history", chatController.getChatHistory);
+router.get("/history/:conversationId", chatController.getChatHistory);
 
 // Send a message and get AI response
 router.post("/process-message", chatController.processMessage);
