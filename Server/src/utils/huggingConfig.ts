@@ -10,7 +10,7 @@ const modelName = process.env.MODEL_NAME;
 export const AI = async (prompt: string) => {
   const response = hf.textGenerationStream({
     model_name: modelName,
-    inputs: prompt,
+    inputs: `${prompt}`,
     parameters: {
       max_new_tokens: 1000,
       do_sample: true,
@@ -24,9 +24,7 @@ export const AI = async (prompt: string) => {
   let result = "";
   for await (const chunk of response) {
     result += chunk.token.text;
-    // console.log(chunk.token.text);
   }
 
-  console.log("response", result);
   return result;
 };

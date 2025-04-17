@@ -6,17 +6,23 @@ export const apiSlice = createApi({
     baseUrl: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
   }),
   endpoints: (builder) => ({
-    sendMessage: builder.mutation<any, string>({
-      query: (message) => ({
+    sendMessage: builder.mutation<
+      any,
+      { message: string; conversationId?: string }
+    >({
+      query: ({ message, conversationId }) => ({
         url: "/chat",
         method: "POST",
-        body: { message },
+        body: { message, conversationId },
       }),
     }),
 
     // Get chat history
-    getChatHistory: builder.query<any, void>({
-      query: () => "/history",
+    getChatHistory: builder.query<any, string | void>({
+      query: (conversationId) =>
+        conversationId
+          ? `/history?conversationId=${conversationId}`
+          : "/history",
     }),
 
     // Create a new conversation
